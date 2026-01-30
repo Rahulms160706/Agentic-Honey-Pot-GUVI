@@ -99,10 +99,10 @@ class IntelligenceExtractor:
         found_keywords = [kw for kw in self.suspicious_keywords if kw in text_lower]
         intelligence["suspiciousKeywords"] = list(set(found_keywords))
         
-        # Extract additional context-specific intelligence (only keywords)
-        contextual_intel = self._extract_contextual_intelligence(all_text)
-        # Only merge the suspiciousKeywords, don't overwrite other keys
-        intelligence["suspiciousKeywords"].extend(contextual_intel["suspiciousKeywords"])
+            # Extract additional context-specific intelligence (only keywords)
+            contextual_intel = self._extract_contextual_intelligence(all_text)
+            # Only merge the suspiciousKeywords, don't overwrite other keys
+            intelligence["suspiciousKeywords"].extend(contextual_intel["suspiciousKeywords"])
         
         # Remove duplicates
         for key in intelligence:
