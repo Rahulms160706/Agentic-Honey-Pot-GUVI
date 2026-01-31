@@ -133,8 +133,8 @@ class ScamDetector:
         # Cap confidence at 1.0
         confidence_score = min(confidence_score, 1.0)
         
-        # Determine if it's a scam
-        is_scam = confidence_score >= 0.5 or len(indicators) >= 3
+        # Determine if it's a scam (lowered threshold for better detection)
+        is_scam = confidence_score >= 0.35 or len(indicators) >= 2
         
         # Generate notes
         notes = self._generate_notes(indicators, confidence_score)

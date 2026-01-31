@@ -2,6 +2,37 @@
 
 An AI-powered honeypot system that autonomously detects and engages with scammers to extract actionable intelligence.
 
+## 🔑 For Evaluators / Testers
+
+**API Endpoint:** `http://localhost:8000` (or your deployed URL)  
+**API Key:** `YOUR_SECRET_API_KEY_12345` (default - can be changed via environment variable)  
+**Authentication Header:** `x-api-key: YOUR_SECRET_API_KEY_12345`
+
+### Quick Test Instructions:
+1. **Interactive Documentation:** Visit `http://localhost:8000/docs`
+   - Click the **🔓 Authorize** button at the top-right
+   - Enter API key: `YOUR_SECRET_API_KEY_12345`
+   - Try the POST `/api/message` endpoint
+
+2. **Dashboard:** Visit `http://localhost:8000/dashboard` to see extracted intelligence
+
+3. **Test Endpoint:**
+   ```bash
+   curl -X POST http://localhost:8000/api/message \
+     -H "x-api-key: YOUR_SECRET_API_KEY_12345" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "sessionId": "test-session-1",
+       "message": {
+         "sender": "scammer",
+         "text": "Your account is blocked. Send OTP to verify.",
+         "timestamp": "2026-01-31T10:00:00Z"
+       },
+       "conversationHistory": [],
+       "metadata": {"channel": "SMS"}
+     }'
+   ```
+
 ## 🎯 Overview
 
 This system implements an intelligent honeypot that:

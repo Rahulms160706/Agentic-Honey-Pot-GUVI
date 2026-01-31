@@ -27,13 +27,31 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI app
 app = FastAPI(
     title="Agentic Honey-Pot API",
-    description="AI-powered honeypot for scam detection and intelligence extraction",
+    description="""AI-powered honeypot for scam detection and intelligence extraction.
+    
+    ## Authentication
+    All endpoints require an API key in the request header:
+    - Header name: `x-api-key`
+    - Default key: `YOUR_SECRET_API_KEY_12345`
+    
+    Click the 'Authorize' button (🔓) at the top to enter your API key.
+    
+    ## Quick Start
+    1. Click 'Authorize' and enter API key
+    2. Test with POST /api/message endpoint
+    3. View results in GET /api/all-sessions
+    4. See dashboard at /dashboard
+    """,
     version="1.0.0"
 )
 
 # API Key configuration
 API_KEY = os.getenv("API_KEY", "YOUR_SECRET_API_KEY_12345")  # Change this to a secure key
-api_key_header = APIKeyHeader(name="x-api-key", auto_error=True)
+api_key_header = APIKeyHeader(
+    name="x-api-key",
+    auto_error=True,
+    description="API Key for authentication. Default: YOUR_SECRET_API_KEY_12345"
+)
 
 # GUVI callback endpoint
 GUVI_CALLBACK_URL = "https://hackathon.guvi.in/api/updateHoneyPotFinalResult"
@@ -122,7 +140,11 @@ async def root():
     return {
         "service": "Agentic Honey-Pot API",
         "status": "operational",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "documentation": "/docs",
+        "dashboard": "/dashboard",
+        "api_key_header": "x-api-key",
+        "default_api_key": "YOUR_SECRET_API_KEY_12345"
     }
 
 
@@ -189,8 +211,13 @@ async def handle_message(
             metadata=metadata.dict() if metadata else {}
         )
         
-        session["scam_detected"] = scam_result["is_scam"]
-        session["confidence_score"] = scam_result["confidence"]
+        # Once scam is detected, keep it detected (sticky detection)
+        if scam_result["is_scam"] or session["scam_detected"]:
+            session["scam_detected"] = True
+            # Keep the highest confidence score
+            session["confidence_score"] = max(session["confidence_score"], scam_result["confidence"])
+        else:
+            session["confidence_score"] = scam_result["confidence"]
         
         logger.info(f"Scam detection: {scam_result['is_scam']} (confidence: {scam_result['confidence']})")
         
@@ -384,7 +411,7 @@ async def dashboard():
                 background: white;
                 padding: 20px;
                 border-radius: 10px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                 text-align: center;
             }
             
@@ -642,6 +669,8 @@ async def dashboard():
                 }
                 
                 const createdTime = new Date(intelligence.createdAt).toLocaleString();
+                const confidence = intelligence.confidenceScore || 0;
+                const confidencePercent = (confidence * 100).toFixed(0);
                 
                 return `
                     <div class="session-card ${cardClass}">
@@ -649,6 +678,7 @@ async def dashboard():
                         <div class="session-info">
                             <span class="badge ${badgeClass}">${badgeText}</span>
                             <p>📊 Messages Exchanged: <strong>${session.messagesExchanged}</strong></p>
+                            <p>🎯 Confidence: <strong>${confidencePercent}%</strong></p>
                             <p>🕐 Created: ${createdTime}</p>
                         </div>
                         <div style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
